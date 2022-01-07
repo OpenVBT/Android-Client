@@ -147,7 +147,18 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:srcCompat="@android:drawable/stat_sys_data_bluetooth"
-        app:backgroundTint="@color/fab_not_scanning" />
+        app:backgroundTint="@color/fab_not_connected" />
+
+    <ProgressBar
+        android:id="@+id/scan_progress_bar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="95dp"
+        android:layout_height="95dp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@id/fab"
+        app:layout_constraintEnd_toEndOf="@id/fab"
+        app:layout_constraintStart_toStartOf="@id/fab"
+        app:layout_constraintTop_toTopOf="@id/fab" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

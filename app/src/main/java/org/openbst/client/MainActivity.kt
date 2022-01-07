@@ -4,7 +4,6 @@ import android.Manifest
 import android.app.Activity
 import android.bluetooth.*
 import android.bluetooth.le.ScanCallback
-import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
@@ -13,6 +12,7 @@ import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.os.*
 import android.util.Log
+import android.widget.ProgressBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -61,11 +61,35 @@ class MainActivity : AppCompatActivity() {
         set(value) {
             field = value
             runOnUiThread {
-                fab.backgroundTintList =
-                    ColorStateList.valueOf(ContextCompat.getColor(
+                if (value)
+                    fab.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(
                         this,
-                        if (field) R.color.fab_scanning else R.color.fab_not_scanning
+                        R.color.fab_scanning
                     ))
+
+                // When scanning begins, make progressbar visible
+                if (value)
+                    scan_progress_bar.visibility = ProgressBar.VISIBLE
+            }
+        }
+
+    private var isConnectedAndReady = false
+        set(value) {
+            field = value
+            runOnUiThread {
+                // When scanning is over AND our connection is fully configured
+                if (value) {
+                    fab.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(
+                        this,
+                        R.color.fab_connected
+                    ))
+                    scan_progress_bar.visibility = ProgressBar.INVISIBLE
+                } else {
+                    fab.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(
+                        this,
+                        R.color.fab_not_connected
+                    ))
+                }
             }
         }
 
@@ -285,11 +309,13 @@ class MainActivity : AppCompatActivity() {
                     Log.w("BluetoothGattCallback", "Successfully disconnected from $deviceAddress")
                     gatt.close()
                     bluetoothGatt = null
+                    isConnectedAndReady = false
                 }
             } else {
                 Log.w("BluetoothGattCallback", "Error $status encountered for $deviceAddress! Disconnecting...")
                 gatt.close()
                 bluetoothGatt = null
+                isConnectedAndReady = false
             }
         }
 
@@ -315,6 +341,8 @@ class MainActivity : AppCompatActivity() {
                 val repStatsChar = gatt
                     .getService(repStatsServUuid).getCharacteristic(repStatsCharUuid)
                 enableNotifications(repStatsChar)
+
+                isConnectedAndReady = true
             }
         }
 

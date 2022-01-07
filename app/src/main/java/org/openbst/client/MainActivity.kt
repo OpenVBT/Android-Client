@@ -4,16 +4,14 @@ import android.Manifest
 import android.app.Activity
 import android.bluetooth.*
 import android.bluetooth.le.ScanCallback
+import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
-import android.os.Build
-import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
+import android.os.*
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -26,8 +24,13 @@ import org.jetbrains.anko.alert
 import java.util.*
 
 
-/** UUID of the Client Characteristic Configuration Descriptor (0x2902). */
+/* MAC address of the OpenVBT unit to connect to */
+private const val OPENVBT_MAC_ADDRESS = "5C:60:D3:6C:82:1C"
+
+/* UUID of the Client Characteristic Configuration Descriptor (0x2902). */
 private const val CCC_DESCRIPTOR_UUID = "00002902-0000-1000-8000-00805F9B34FB"
+
+/* UUIDs of our service and characteristics */
 private const val REP_STATISTICS_SERVICE_UUID = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
 private const val REP_STATISTICS_CHAR_UUID = "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
 
@@ -189,8 +192,11 @@ class MainActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !isLocationPermissionGranted) {
             requestLocationPermission()
         } else {
+            // Clear old results
             scanResults.clear()
             scanResultAdapter.notifyDataSetChanged()
+
+            // Find new results
             bleScanner.startScan(null, scanSettings, scanCallback)
             isScanning = true
         }
@@ -235,19 +241,22 @@ class MainActivity : AppCompatActivity() {
 
     private val scanCallback = object: ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
-            val indexQuery = scanResults.indexOfFirst { it.device.address == result.device.address }
-            if (indexQuery != -1) { // A scan result already exists with the same address
-                scanResults[indexQuery] = result
-                scanResultAdapter.notifyItemChanged(indexQuery)
-            } else {
-                with(result.device) {
-                    Log.i(
-                        "ScanCallback",
-                        "Found BLE device! Name: ${name ?: "Unnamed"}, address: $address"
-                    )
-                }
-                scanResults.add(result)
-                scanResultAdapter.notifyItemInserted(scanResults.size - 1)
+            with(result.device) {
+                Log.d(
+                    "ScanCallback",
+                    "Found BLE device! Name: ${name ?: "Unnamed"}, address: $address"
+                )
+            }
+
+            if (result.device.address == OPENVBT_MAC_ADDRESS) {
+                if (isScanning) stopBleScan()
+
+                Handler(Looper.getMainLooper()).postDelayed({
+                    with (result.device) {
+                        Log.w("ScanResultAdapter", "OpenVBT unit detected! Connecting to $address")
+                        connectGatt(this@MainActivity, false, gattCallback)
+                    }
+                }, 1000)
             }
         }
 
@@ -314,6 +323,16 @@ class MainActivity : AppCompatActivity() {
             characteristic: BluetoothGattCharacteristic
         ) {
             with (characteristic) {
+                // Split our received data into four values:
+                //     max_vel, min_vel, max_accel, min_accel
+                val params = String(value).split(" ")
+                runOnUiThread {
+                    max_velocity.text = params[0]
+                    min_velocity.text = params[1]
+                    max_accel.text = params[2]
+                    min_accel.text = params[3]
+                }
+
                 Log.i("BluetoothGattCallback", "Characteristic $uuid changed | value: ${String(value)}")
             }
         }

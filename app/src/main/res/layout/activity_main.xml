@@ -135,7 +135,7 @@
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView8"
-        tools:listitem="@layout/row_scan_result" />
+        tools:listitem="@layout/row_repdata" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
@@ -159,6 +159,39 @@
         app:layout_constraintEnd_toEndOf="@id/fab"
         app:layout_constraintStart_toStartOf="@id/fab"
         app:layout_constraintTop_toTopOf="@id/fab" />
+
+    <TextView
+        android:id="@+id/textView9"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:fontFamily="@font/exo_extrabold"
+        android:text="m/s"
+        android:textSize="8sp"
+        app:layout_constraintBottom_toBottomOf="@+id/min_velocity"
+        app:layout_constraintStart_toEndOf="@+id/min_velocity" />
+
+    <TextView
+        android:id="@+id/textView10"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:fontFamily="@font/exo_extrabold"
+        android:text="m/s^2"
+        android:textSize="8sp"
+        app:layout_constraintBottom_toBottomOf="@+id/max_accel"
+        app:layout_constraintStart_toEndOf="@+id/max_accel" />
+
+    <TextView
+        android:id="@+id/textView11"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:fontFamily="@font/exo_extrabold"
+        android:text="m/s^2"
+        android:textSize="8sp"
+        app:layout_constraintBottom_toBottomOf="@+id/min_accel"
+        app:layout_constraintStart_toEndOf="@+id/min_accel" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

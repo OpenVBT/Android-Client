@@ -97,15 +97,10 @@ class MainActivity : AppCompatActivity() {
         .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
         .build()
 
-    private val scanResults = mutableListOf<ScanResult>()
-    private val scanResultAdapter: ScanResultAdapter by lazy {
-        ScanResultAdapter(scanResults) { result ->
-            if (isScanning) stopBleScan()
-
-            with (result.device) {
-                Log.w("ScanResultAdapter", "Connecting to $address")
-                connectGatt(this@MainActivity, false, gattCallback)
-            }
+    private val repetitions = mutableListOf<RepData>()
+    private val repetitionAdapter: RepDataAdapter by lazy {
+        RepDataAdapter(repetitions) {
+            Log.w("RepetitionAdapter", "Repetition row pressed")
         }
     }
 
@@ -172,7 +167,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupRecyclerView() {
         scan_results_recycler_view.apply {
-            adapter = scanResultAdapter
+            adapter = repetitionAdapter
             layoutManager = LinearLayoutManager(
                 this@MainActivity,
                 RecyclerView.VERTICAL,
@@ -217,8 +212,8 @@ class MainActivity : AppCompatActivity() {
             requestLocationPermission()
         } else {
             // Clear old results
-            scanResults.clear()
-            scanResultAdapter.notifyDataSetChanged()
+            /*repetition.clear()
+            scanResultAdapter.notifyDataSetChanged()*/
 
             // Find new results
             bleScanner.startScan(null, scanSettings, scanCallback)
@@ -359,6 +354,9 @@ class MainActivity : AppCompatActivity() {
                     min_velocity.text = params[1]
                     max_accel.text = params[2]
                     min_accel.text = params[3]
+
+                    repetitions.add(RepData(params[0], params[1], params[2], params[3]))
+                    repetitionAdapter.notifyItemInserted(repetitions.size - 1)
                 }
 
                 Log.i("BluetoothGattCallback", "Characteristic $uuid changed | value: ${String(value)}")

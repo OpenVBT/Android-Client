@@ -61,16 +61,27 @@ class MainActivity : AppCompatActivity() {
         set(value) {
             field = value
             runOnUiThread {
-                if (value)
-                    fab.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(
-                        this,
-                        R.color.fab_scanning
-                    ))
-
-                // When scanning begins, make progressbar visible
-                if (value)
+                if (value) {
+                    fab.backgroundTintList = ColorStateList.valueOf(
+                        ContextCompat.getColor(
+                            this,
+                            R.color.fab_scanning
+                        )
+                    )
                     scan_progress_bar.visibility = ProgressBar.VISIBLE
+                }
             }
+        }
+
+    // Used for automatically reconnecting: represents whether the user wants to be connected
+    private var connectionDesired = false
+        set(value) {
+            field = value
+            // Handle connecting/disconnecting to/from our device
+            if (value)
+                startConnection()
+            else
+                stopConnection()
         }
 
     private var isConnectedAndReady = false
@@ -115,10 +126,12 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         fab.setOnClickListener {
-            if (!isScanning)
-                startBleScan()
+            // Toggle our connectDesired var: this var AUTOMATICALLY HANDLES CONNECT/DISCONNECT functionality
+            if (!connectionDesired)
+                connectionDesired = true // This automatically connects us
             else
-                stopBleScan()
+                if (isConnectedAndReady)
+                    connectionDesired = false // Only allow disconnect after connection successful
         }
 
         setupRecyclerView()
@@ -207,15 +220,22 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun startConnection() {
+        // Start scanning: we will auto-connect when correct device is found
+        startBleScan()
+    }
+
+    private fun stopConnection() {
+        if (isScanning) stopBleScan()
+
+        // Force a disconnection
+        bluetoothGatt?.disconnect()
+    }
+
     private fun startBleScan() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !isLocationPermissionGranted) {
             requestLocationPermission()
         } else {
-            // Clear old results
-            /*repetition.clear()
-            scanResultAdapter.notifyDataSetChanged()*/
-
-            // Find new results
             bleScanner.startScan(null, scanSettings, scanCallback)
             isScanning = true
         }
@@ -301,16 +321,24 @@ class MainActivity : AppCompatActivity() {
                         bluetoothGatt?.discoverServices()
                     }, 1000)
                 } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                    Log.w("BluetoothGattCallback", "Successfully disconnected from $deviceAddress")
+                    Log.w("BluetoothGattCallback", "Disconnected from $deviceAddress")
                     gatt.close()
                     bluetoothGatt = null
                     isConnectedAndReady = false
+
+                    // If we desire to be connected, then automatically attempt reconnection
+                    if (connectionDesired)
+                        startConnection()
                 }
             } else {
                 Log.w("BluetoothGattCallback", "Error $status encountered for $deviceAddress! Disconnecting...")
                 gatt.close()
                 bluetoothGatt = null
                 isConnectedAndReady = false
+
+                // If we desire to be connected, then automatically attempt reconnection
+                if (connectionDesired)
+                    startConnection()
             }
         }
 

@@ -1,0 +1,15 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="@string/debug_header">
+
+        <SwitchPreferenceCompat
+            app:key="debug_enabled"
+            app:title="@string/debug_enabled_title"/>
+        <SwitchPreferenceCompat
+            app:dependency="debug_enabled"
+            app:key="mock_accelerometer"
+            app:title="@string/mock_accelerometer_title" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

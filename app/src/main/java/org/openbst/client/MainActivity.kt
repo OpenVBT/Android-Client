@@ -12,6 +12,8 @@ import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.os.*
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.ProgressBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -136,6 +138,25 @@ class MainActivity : AppCompatActivity() {
         }
 
         setupRecyclerView()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        // Populate toolbar
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
+        R.id.action_settings -> {
+            // Settings action selected
+            val settingsIntent = Intent(this@MainActivity, SettingsActivity::class.java)
+            startActivity(settingsIntent)
+            true
+        }
+        else -> {
+            // Unrecognized action
+            super.onOptionsItemSelected(item)
+        }
     }
 
     override fun onResume() {

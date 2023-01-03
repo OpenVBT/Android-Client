@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">OpenBST Client</string>
+    <string name="app_name">OpenBST</string>
     <string name="action_settings">Settings</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>
@@ -9,4 +9,12 @@
 
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+
+    <!-- Preference Titles -->
+    <string name="debug_header">Debugging</string>
+
+    <!-- Debug Preferences -->
+    <string name="debug_enabled_title">Enable debug settings</string>
+    <string name="mock_accelerometer_title">Mock rep data using this device\'s accelerometer</string>
 </resources>

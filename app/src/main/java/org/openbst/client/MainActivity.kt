@@ -45,13 +45,13 @@ class MainActivity : AppCompatActivity() {
      * Class Properties
      */
 
-    private val bluetoothAdapter: BluetoothAdapter by lazy {
+    private val bluetoothAdapter: BluetoothAdapter? by lazy {
         val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-        bluetoothManager.adapter
+        bluetoothManager?.adapter
     }
 
     private val bleScanner by lazy {
-        bluetoothAdapter.bluetoothLeScanner
+        bluetoothAdapter?.bluetoothLeScanner
     }
 
     private val isLocationPermissionGranted
@@ -124,6 +124,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        setSupportActionBar(findViewById(R.id.toolbar))
 
         fab.setOnClickListener {
             // Toggle our connectDesired var: this var AUTOMATICALLY HANDLES CONNECT/DISCONNECT functionality
@@ -140,8 +141,10 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        if(!bluetoothAdapter.isEnabled) {
-            promptEnableBluetooth();
+        if (bluetoothAdapter != null) {
+            if (!bluetoothAdapter!!.isEnabled) {
+                promptEnableBluetooth();
+            }
         }
     }
 
@@ -196,9 +199,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun promptEnableBluetooth() {
-        if (!bluetoothAdapter.isEnabled) {
-            val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-            startActivityForResult(enableBtIntent, ENABLE_BLUETOOTH_REQUEST_CODE)
+        if (bluetoothAdapter != null) {
+            if (!bluetoothAdapter!!.isEnabled) {
+                val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                startActivityForResult(enableBtIntent, ENABLE_BLUETOOTH_REQUEST_CODE)
+            }
         }
     }
 
@@ -236,14 +241,25 @@ class MainActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !isLocationPermissionGranted) {
             requestLocationPermission()
         } else {
-            bleScanner.startScan(null, scanSettings, scanCallback)
-            isScanning = true
+            if (bleScanner != null) {
+                bleScanner!!.startScan(null, scanSettings, scanCallback)
+                isScanning = true
+            } else {
+                runOnUiThread {
+                    alert {
+                        title = "Bluetooth not supported"
+                        message = "Your device does not support bluetooth scanning."
+                    }.show()
+                }
+            }
         }
     }
 
     private fun stopBleScan() {
-        bleScanner.stopScan(scanCallback)
-        isScanning = false
+        if (bleScanner != null) {
+            bleScanner!!.stopScan(scanCallback)
+            isScanning = false
+        }
     }
 
     private fun enableNotifications(characteristic: BluetoothGattCharacteristic) {

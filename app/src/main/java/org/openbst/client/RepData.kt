@@ -1,8 +1,10 @@
 package org.openbst.client
 
 data class RepData(
-    val max_velocity: String,
-    val min_velocity: String,
-    val max_accel: String,
-    val min_accel: String
+    val timestamp_ms: Long,
+    val date_string : String,
+    val max_velocity: Float,
+    val min_velocity: Float,
+    val max_accel: Float,
+    val min_accel: Float
     )

@@ -37,10 +37,10 @@ class RepDataAdapter(
     ) : RecyclerView.ViewHolder(view) {
 
         fun bind(repData: RepData) {
-            view.max_velocity.text = repData.max_velocity
-            view.min_velocity.text = repData.min_velocity
-            view.max_accel.text = repData.max_accel
-            view.min_accel.text = repData.min_accel
+            view.max_velocity.text  = "%.2f".format(repData.max_velocity)
+            view.min_velocity.text  = "%.2f".format(repData.min_velocity)
+            view.max_accel.text     = "%.2f".format(repData.max_accel)
+            view.min_accel.text     = "%.2f".format(repData.min_accel)
 
             view.setOnClickListener { onClickListener.invoke(repData) }
         }

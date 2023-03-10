@@ -10,7 +10,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
-import android.os.*
+import android.os.Build
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -23,6 +26,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
 import kotlinx.android.synthetic.main.activity_main.*
 import org.jetbrains.anko.alert
+import java.text.SimpleDateFormat
 import java.util.*
 
 
@@ -47,9 +51,13 @@ class MainActivity : AppCompatActivity() {
      * Class Properties
      */
 
+    private val databaseHandler: DatabaseHandler by lazy {
+        DatabaseHandler(this)
+    }
+
     private val bluetoothAdapter: BluetoothAdapter? by lazy {
         val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-        bluetoothManager?.adapter
+        bluetoothManager.adapter
     }
 
     private val bleScanner by lazy {
@@ -203,6 +211,9 @@ class MainActivity : AppCompatActivity() {
      */
 
     private fun setupRecyclerView() {
+        // Read all old entries from the database
+        repetitions.addAll(databaseHandler.getRepetitionsAtDate(getCurrentDateString()))
+
         scan_results_recycler_view.apply {
             adapter = repetitionAdapter
             layoutManager = LinearLayoutManager(
@@ -311,6 +322,33 @@ class MainActivity : AppCompatActivity() {
         } ?: error("Not connected to a BLE device!")
     }
 
+    private fun addRepetition(timestampMs : Long, dateStr : String,
+                              maxVelocityStr : String, minVelocityStr : String,
+                              maxAccelStr : String, minAccelStr : String) {
+
+        val repData = RepData(
+            timestampMs,
+            dateStr,
+            maxVelocityStr.toFloat(),
+            minVelocityStr.toFloat(),
+            maxAccelStr.toFloat(),
+            minAccelStr.toFloat())
+
+        runOnUiThread {
+            max_velocity.text = maxVelocityStr
+            min_velocity.text = minVelocityStr
+            max_accel.text = maxAccelStr
+            min_accel.text = minAccelStr
+
+            repetitions.add(repData)
+            repetitionAdapter.notifyItemInserted(repetitions.size - 1)
+        }
+
+        databaseHandler.addRepetition(repData)
+    }
+
+    private fun getCurrentDateString() = SimpleDateFormat("yyyy-MM-dd").format(Date())
+
     /*
      * Callback Functions
      */
@@ -414,15 +452,10 @@ class MainActivity : AppCompatActivity() {
                 // Split our received data into four values:
                 //     max_vel, min_vel, max_accel, min_accel
                 val params = String(value).split(" ")
-                runOnUiThread {
-                    max_velocity.text = params[0]
-                    min_velocity.text = params[1]
-                    max_accel.text = params[2]
-                    min_accel.text = params[3]
 
-                    repetitions.add(RepData(params[0], params[1], params[2], params[3]))
-                    repetitionAdapter.notifyItemInserted(repetitions.size - 1)
-                }
+                val timestampMs = System.currentTimeMillis() / 1000
+
+                addRepetition(timestampMs, getCurrentDateString(), params[0], params[1], params[2], params[3])
 
                 Log.i("BluetoothGattCallback", "Characteristic $uuid changed | value: ${String(value)}")
             }

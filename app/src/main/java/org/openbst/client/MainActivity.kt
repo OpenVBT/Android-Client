@@ -120,9 +120,7 @@ class MainActivity : AppCompatActivity() {
 
     private val repetitions = mutableListOf<RepData>()
     private val repetitionAdapter: RepDataAdapter by lazy {
-        RepDataAdapter(repetitions) {
-            Log.w("RepetitionAdapter", "Repetition row pressed")
-        }
+        RepDataAdapter(repetitions, ::promptDeleteRepetition)
     }
 
     private var bluetoothGatt: BluetoothGatt? = null
@@ -345,6 +343,27 @@ class MainActivity : AppCompatActivity() {
         }
 
         databaseHandler.addRepetition(repData)
+    }
+
+    private fun promptDeleteRepetition(repData : RepData) {
+        Log.w("promptDeleteRepetition", "Deleting rep: " + repData.toString())
+        runOnUiThread {
+            alert {
+                title = "Delete this entry?"
+                positiveButton(android.R.string.ok) {
+                    // Remove from list frontend
+                    val index = repetitions.indexOf(repData)
+                    repetitions.remove(repData)
+                    repetitionAdapter.notifyItemRemoved(index)
+
+                    // Remove from database backend
+                    databaseHandler.deleteRepetition(repData)
+                }
+                negativeButton(android.R.string.cancel) {
+                    // Do nothing
+                }
+            }.show()
+        }
     }
 
     private fun getCurrentDateString() = SimpleDateFormat("yyyy-MM-dd").format(Date())

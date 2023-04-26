@@ -2,6 +2,7 @@ package org.openbst.client
 
 import android.Manifest
 import android.app.Activity
+import android.app.DatePickerDialog
 import android.bluetooth.*
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
@@ -17,6 +18,7 @@ import android.os.Looper
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.DatePicker
 import android.widget.ProgressBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -157,6 +159,25 @@ class MainActivity : AppCompatActivity() {
             // Settings action selected
             val settingsIntent = Intent(this@MainActivity, SettingsActivity::class.java)
             startActivity(settingsIntent)
+            true
+        }
+        R.id.action_calendar -> {
+            // Calendar action selected
+            val c = Calendar.getInstance()
+            val year = c.get(Calendar.YEAR)
+            val month = c.get(Calendar.MONTH)
+            val day = c.get(Calendar.DAY_OF_MONTH)
+
+            val dpd = DatePickerDialog(this@MainActivity)
+
+            dpd.datePicker.init(year, month, day, DatePicker.OnDateChangedListener { view, year, monthOfYear, dayOfMonth ->
+                Log.i("DateChanged", "" + dayOfMonth + ", " + monthOfYear + ", " + year)
+                dpd.dismiss()
+            })
+            dpd.setButton(DatePickerDialog.BUTTON_POSITIVE, null, dpd);
+            dpd.setButton(DatePickerDialog.BUTTON_NEGATIVE, null, dpd);
+
+            dpd.show()
             true
         }
         else -> {

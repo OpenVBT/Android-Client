@@ -145,7 +145,11 @@ class MainActivity : AppCompatActivity() {
                     connectionDesired = false // Only allow disconnect after connection successful
         }
 
-        setupRecyclerView()
+        val c = Calendar.getInstance()
+        val todaysYear = c.get(Calendar.YEAR)
+        val todaysMonth = c.get(Calendar.MONTH)
+        val todaysDay = c.get(Calendar.DAY_OF_MONTH)
+        updateSelectedDate(todaysYear, todaysMonth, todaysDay)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -154,6 +158,7 @@ class MainActivity : AppCompatActivity() {
         return super.onCreateOptionsMenu(menu)
     }
 
+    private val selectionCalendar = Calendar.getInstance()
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
         R.id.action_settings -> {
             // Settings action selected
@@ -163,15 +168,16 @@ class MainActivity : AppCompatActivity() {
         }
         R.id.action_calendar -> {
             // Calendar action selected
-            val c = Calendar.getInstance()
-            val year = c.get(Calendar.YEAR)
-            val month = c.get(Calendar.MONTH)
-            val day = c.get(Calendar.DAY_OF_MONTH)
+            val todaysYear = selectionCalendar.get(Calendar.YEAR)
+            val todaysMonth = selectionCalendar.get(Calendar.MONTH)
+            val todaysDay = selectionCalendar.get(Calendar.DAY_OF_MONTH)
 
             val dpd = DatePickerDialog(this@MainActivity)
 
-            dpd.datePicker.init(year, month, day, DatePicker.OnDateChangedListener { view, year, monthOfYear, dayOfMonth ->
-                Log.i("DateChanged", "" + dayOfMonth + ", " + monthOfYear + ", " + year)
+            dpd.datePicker.init(todaysYear, todaysMonth, todaysDay, DatePicker.OnDateChangedListener { view, year, monthOfYear, dayOfMonth ->
+                // Update displayed previous reps
+                selectionCalendar.set(year, monthOfYear, dayOfMonth)
+                updateSelectedDate(year, (monthOfYear + 1), dayOfMonth)
                 dpd.dismiss()
             })
             dpd.setButton(DatePickerDialog.BUTTON_POSITIVE, null, dpd);
@@ -229,9 +235,20 @@ class MainActivity : AppCompatActivity() {
      * Local Helper Functions
      */
 
-    private fun setupRecyclerView() {
+    private fun updateSelectedDate(year: Int, month: Int, day: Int) {
+
+        val dateStr = getDateStringFromDate(year, month, day)
+
+        // Update date string in UI
+        val dateFormattedNicely = formatDateForUi(year, month, day)
+        runOnUiThread {
+            selectedDateTextView.text = dateFormattedNicely
+        }
+
+        repetitions.clear()
+
         // Read all old entries from the database
-        repetitions.addAll(databaseHandler.getRepetitionsAtDate(getCurrentDateString()))
+        repetitions.addAll(databaseHandler.getRepetitionsAtDate(dateStr))
 
         scan_results_recycler_view.apply {
             adapter = repetitionAdapter
@@ -388,6 +405,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getCurrentDateString() = SimpleDateFormat("yyyy-MM-dd").format(Date())
+    private fun getDateStringFromDate(year: Int, month: Int, day: Int) = "%04d-%02d-%02d".format(year, month, day)
+    private val MONTH_NAMES = arrayOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+    private fun formatDateForUi(year: Int, month: Int, day: Int) = "%s %d, %d".format(MONTH_NAMES[month - 1], day, year)
 
     /*
      * Callback Functions

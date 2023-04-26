@@ -114,16 +114,18 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/min_accel" />
+
     <TextView
-        android:id="@+id/textView8"
+        android:id="@+id/selectedDateTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="14dp"
         android:layout_marginTop="18dp"
         android:fontFamily="@font/exo_extrabold"
-        android:text="Previous Reps:"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/divider1" />
+        android:text="Jan 1, 2023"
+        app:layout_constraintTop_toBottomOf="@+id/divider1"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        tools:layout_editor_absoluteX="14dp" />
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/scan_results_recycler_view"
         android:layout_width="match_parent"
@@ -135,7 +137,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView8"
+        app:layout_constraintTop_toBottomOf="@+id/selectedDateTextView"
         tools:listitem="@layout/row_repdata" />
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"

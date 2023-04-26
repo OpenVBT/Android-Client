@@ -8,7 +8,8 @@
         <SwitchPreferenceCompat
             app:dependency="debug_enabled"
             app:key="mock_accelerometer"
-            app:title="@string/mock_accelerometer_title" />
+            app:title="@string/mock_accelerometer_title"
+            app:singleLineTitle="false" />
 
     </PreferenceCategory>
 
